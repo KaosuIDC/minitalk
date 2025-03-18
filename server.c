@@ -17,10 +17,11 @@ static void	ft_putpid(pid_t n)
 	}
 }
 
-static void	signal_handler(int signal)
+static void	signal_handler(int signal, siginfo_t *info, void *context)
 {
 	static char	chr;
 	static int	i;
+	(void)context;
 
 	if (i == 0)
 		chr = 0;
@@ -37,16 +38,22 @@ static void	signal_handler(int signal)
 		i = 0;
 		chr = 0;
 	}
+	kill(info->si_pid, SIGUSR1);
 }
 
 int	main(void)
 {
 	pid_t	server_id;
+	struct sigaction sa;
 
 	server_id = getpid();
 	ft_putpid(server_id);
-	signal(SIGUSR1, signal_handler);
-	signal(SIGUSR2, signal_handler);
+	write (1, "\n", 1);
+	sa.sa_sigaction = signal_handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO | SA_RESTART;
+	sigaction(SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR2, &sa, NULL);
 	while (1)
 	{
 		pause();

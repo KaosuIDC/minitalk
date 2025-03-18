@@ -1,6 +1,14 @@
 #include <signal.h>
 #include <unistd.h>
 
+int	confirm_process = 0;
+
+void wait_for_process(int signal)
+{
+	(void)signal;
+	confirm_process = 1;
+}
+
 static int	ft_atoi(const char *str)
 {
 	int	i;
@@ -40,7 +48,10 @@ void	send_signal(int pid, unsigned char character)
 			kill(pid, SIGUSR2);
 		else
 		 	kill(pid, SIGUSR1);
-		usleep(142);
+		usleep(42);
+		while (!confirm_process)
+			;
+		confirm_process = 0;
 	}
 }
 
@@ -52,7 +63,10 @@ void	send_for_termination_signal(int pid)
 	while (i < 8)
 	{
 		kill(pid, SIGUSR2);
-		usleep(142);
+		usleep(42);
+		while (!confirm_process)
+			;
+		confirm_process = 0;
 		i++;
 	}
 }
@@ -65,6 +79,7 @@ int	main(int argc, char **argv)
 	if (argc == 3)
 	{
 		server_id = ft_atoi(argv[1]);
+		signal(SIGUSR1, wait_for_process);
 		i = 0;
 		while (argv[2][i])
 		{
