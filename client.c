@@ -1,9 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   client.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sudelory <sudelory@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/18 13:07:56 by sudelory          #+#    #+#             */
+/*   Updated: 2025/04/02 15:59:23 by sudelory         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <signal.h>
 #include <unistd.h>
 
-int	confirm_process = 0;
+int			confirm_process = 0;
 
-void wait_for_process(int signal)
+void	wait_for_process(int signal)
 {
 	(void)signal;
 	confirm_process = 1;
@@ -36,8 +48,9 @@ static int	ft_atoi(const char *str)
 
 void	send_signal(int pid, unsigned char character)
 {
-	int	i;
+	int				i;
 	unsigned char	temp;
+
 	i = 8;
 	temp = character;
 	while (i > 0)
@@ -47,7 +60,7 @@ void	send_signal(int pid, unsigned char character)
 		if (temp % 2 == 0)
 			kill(pid, SIGUSR2);
 		else
-		 	kill(pid, SIGUSR1);
+			kill(pid, SIGUSR1);
 		usleep(42);
 		while (!confirm_process)
 			;
@@ -88,7 +101,7 @@ int	main(int argc, char **argv)
 		}
 		send_for_termination_signal(server_id);
 	}
-	else 
-		write (2, "Bad number of arguments.\n", 25);
+	else
+		write(2, "Usage : Program name, Server Pid, Text to send.\n", 49);
 	return (0);
 }
