@@ -2,23 +2,27 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   client.c                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: sudelory <sudelory@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
+/*                                                    +:+ +:+        
+	+:+     */
+/*   By: sudelory <sudelory@student.42.fr>          +#+  +:+      
+	+#+        */
+/*                                                +#+#+#+#+#+  
+	+#+           */
 /*   Created: 2025/03/18 13:07:56 by sudelory          #+#    #+#             */
 /*   Updated: 2025/04/02 15:59:23 by sudelory         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <signal.h>
-#include <unistd.h>
+#include "minitalk.h"
 
-int			confirm_process = 0;
-
-void	wait_for_process(int signal)
+size_t	ft_strlen(const char *str)
 {
-	(void)signal;
-	confirm_process = 1;
+	size_t	len;
+
+	len = 0;
+	while (str[len])
+		len++;
+	return (len);
 }
 
 static int	ft_atoi(const char *str)
@@ -46,40 +50,46 @@ static int	ft_atoi(const char *str)
 	return (rev * result);
 }
 
-void	send_signal(int pid, unsigned char character)
+static void	send_char(int pid, unsigned char character)
 {
-	int				i;
-	unsigned char	temp;
+	int	bit;
 
-	i = 8;
-	temp = character;
-	while (i > 0)
+	bit = 8;
+	while (bit > 0)
 	{
-		i--;
-		temp = character >> i;
-		if (temp % 2 == 0)
-			kill(pid, SIGUSR2);
-		else
+		bit--;
+		if ((character >> bit) & 1)
 			kill(pid, SIGUSR1);
+		else
+			kill(pid, SIGUSR2);
 		usleep(42);
-		while (!confirm_process)
+		while (!g_confirm_process)
 			;
-		confirm_process = 0;
+		g_confirm_process = 0;
 	}
 }
 
-void	send_for_termination_signal(int pid)
+void	send_signal(int pid, const char *str)
 {
-	int	i;
+	int				i;
+	unsigned char	len;
 
+	len = (unsigned char)ft_strlen(str);
+	send_char(pid, len);
+	i = 0;
+	while (str[i])
+	{
+		send_char(pid, str[i]);
+		i++;
+	}
 	i = 0;
 	while (i < 8)
 	{
 		kill(pid, SIGUSR2);
 		usleep(42);
-		while (!confirm_process)
+		while (!g_confirm_process)
 			;
-		confirm_process = 0;
+		g_confirm_process = 0;
 		i++;
 	}
 }
@@ -87,19 +97,12 @@ void	send_for_termination_signal(int pid)
 int	main(int argc, char **argv)
 {
 	pid_t	server_id;
-	int		i;
 
 	if (argc == 3)
 	{
 		server_id = ft_atoi(argv[1]);
 		signal(SIGUSR1, wait_for_process);
-		i = 0;
-		while (argv[2][i])
-		{
-			send_signal(server_id, argv[2][i]);
-			i++;
-		}
-		send_for_termination_signal(server_id);
+		send_signal(server_id, argv[2]);
 	}
 	else
 		write(2, "Usage : Program name, Server Pid, Text to send.\n", 49);

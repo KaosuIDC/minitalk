@@ -1,7 +1,8 @@
 CC = cc
+HEADER = minitalk.h
 CFLAGS = -Wall -Wextra -Werror
-CLIENT_SRC = client.c
-SERVER_SRC = server.c
+CLIENT_SRC = client.c utils.c
+SERVER_SRC = server.c utils.c
 CLIENT_OBJ = $(CLIENT_SRC:.c=.o)
 SERVER_OBJ = $(SERVER_SRC:.c=.o)
 CLIENT_EXEC = client
@@ -15,7 +16,7 @@ $(CLIENT_EXEC): $(CLIENT_OBJ)
 $(SERVER_EXEC): $(SERVER_OBJ)
 	$(CC) $(CFLAGS) -o $@ $^
 
-%.o: %.c
+%.o: %.c $(HEADER)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
